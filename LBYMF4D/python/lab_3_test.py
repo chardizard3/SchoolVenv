@@ -23,36 +23,46 @@ from vpython import *
 import serial
 import time
 
-arduino = serial.Serial('/dev/cu.usbmodem11101', 115200)
+#arduino = serial.Serial('/dev/cu.usbmodem11101', 115200) #for mac
+arduino = serial.Serial('COM3', 115200) #for pc
 
-modes = [
-    {"label": "Cylinder Measurement 1", "color": color.red},
-    {"label": "Cylinder Measurement 2", "color": color.green},
-    {"label": "Cylinder Measurement 3", "color": color.blue}
-]
+#dictionary for the 3 mode measurements
+modes = [{"label": "Cylinder Measurement 1", "color": color.red}, 
+        {"label": "Cylinder Measurement 2", "color": color.green}, 
+        {"label": "Cylinder Measurement 3", "color": color.blue}]
+
+
+#reading sensor data
+def read_sensor_data():   
+    arduino.write(b"READ_SENSOR_DATA\n")
+    arduino_data = ser.readline().decode('utf-8').rstrip()
+    if arduino_data:
+        return arduino_data.split(',')
+    return None
 
 current_measurement_index = 0
 
 scene = canvas(width=900, height=600)
 
-cylinder = cylinder(pos=vec(0,-1,0), axis=vec(0,1,0), radius=0.2, length=1, color=cylinders[current_measurement_index]["color"])
+cylinder = cylinder(pos=vec(0,-1,0), axis=vec(0,1,0), radius=0.2, length=1, color=modes[current_measurement_index]["color"])
 
-label(text=cylinders[current_measurement_index]["label"], align='center', pos=vector(0, 1, 0), height=30)
+label(text=modes[current_measurement_index]["label"], align='center', pos=vector(0, 1, 0), height=30)
 
-def update_display(evt):
+def change_mode(evt):
     global current_measurement_index
-    current_measurement_index = (current_measurement_index + 1) % len(cylinders)
+    current_measurement_index = (current_measurement_index + 1) % len(modes)
     
-    cylinder.color = cylinders[current_measurement_index]["color"]
-    label.text = cylinders[current_measurement_index]["label"]
+    cylinder.color = modes[current_measurement_index]["color"]
+    label.text = modes[current_measurement_index]["label"]
 
-scene.bind('keydown', update_display)
+scene.bind('keydown', change_mode)
 
 while True:
     button_state = int(arduino.readline().decode().strip())
-    
+    dhtsensor = arduino.readline().decode('utf-8').rstrip()
+
     if button_state == 1:
-        update_display(None)
+        change_mode(None)
 
 """
 def change_mode(current_mode):
@@ -73,4 +83,39 @@ def change_mode(current_mode):
 current_mode = "Mode 1"
 new_mode = change_mode(current_mode)
 print(f"Current Mode: {current_mode}, New Mode: {new_mode}")
+"""
+
+
+
+"""
+
+# Replace 'COMx' with your Arduino's serial port
+arduino_port = 'COM3'
+baud_rate = 115200
+
+ser = serial.Serial(arduino_port, baud_rate, timeout=5)
+
+def read_sensor_data():
+    ser.write(b"READ_SENSOR_DATA\n")
+    arduino_data = ser.readline().decode('utf-8').rstrip()
+    if arduino_data:
+        return arduino_data.split(',')
+    return None
+
+def read_button_state():
+    ser.write(b"READ_BUTTON_STATE\n")
+    return int(ser.readline().decode('utf-8').rstrip())
+
+while True:
+    sensor_data = read_sensor_data()
+    button_state = read_button_state()
+
+    if sensor_data:
+        tempC, tempF, humidity = map(float, sensor_data)
+        print(f"Temperature: {tempC}°C, {tempF}°F | Humidity: {humidity}%")
+    
+    print(f"Button State: {button_state}")
+
+    time.sleep(2)  # Adjust the delay as needed
+
 """

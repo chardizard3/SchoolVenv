@@ -1,5 +1,5 @@
 #include "DHT.h"
-#define DHTPIN4
+#define DHTPIN 4
 #define  DHTTYPE 11
 DHT TH(DHTPIN, DHTTYPE);
 float tempC;
@@ -21,10 +21,10 @@ void loop()
         tempF = TH.readTemperature(true);
         humidity = TH.readHumidity();
         Serial.print(tempC);
-        Serial.print("degC ");
+        //Serial.print("degC ");
         Serial.print(tempF);
-        Serial.print("degF ");
+        //Serial.print("degF ");
         Serial.print(humidity);
-        Serial.println("%humidity");
+        //Serial.println("%humidity");
         delay(DL);
     }

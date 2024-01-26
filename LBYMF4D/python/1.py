@@ -1,7 +1,7 @@
 import time
 import serial
 
-arduinoData = serial.Serial('/dev/cu.usbmodem11101' , 115200)
+arduinoData = serial.Serial('COM3' , 115200)
 
 time.sleep(1)
 
